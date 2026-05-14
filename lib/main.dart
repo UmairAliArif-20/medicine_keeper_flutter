@@ -129,10 +129,13 @@ class HomePage extends StatelessWidget {
 }
 
 // --- PAGE 3: SETTINGS ---
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
-  @override
+  State<SettingsPage> createState() => SettingsPageState();
+}
+class SettingsPageState extends State<SettingsPage> {
+
   Widget build(BuildContext context) {
     return const Center(
       child: Text('Settings Menu', style: TextStyle(fontSize: 24)),

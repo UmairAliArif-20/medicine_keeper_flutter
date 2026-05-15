@@ -16,15 +16,26 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
 
+  double currentFontSize= 16;
   int pageNumber = 0;
+
+  //Font size settings.
+  void updateFontSize(double newSize)
+  {
+    setState(() {
+      currentFontSize = newSize;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
 
+    //Pages to switch between.
     List<Widget> myPages = [
-      const LoginPage(),
-      const HomePage(),
-      const SettingsPage(),
+       LoginPage(fontSize: currentFontSize),
+       HomePage(fontSize: currentFontSize),
+       SettingsPage(fontSize: currentFontSize, onChanged: updateFontSize),
     ];
 
     return MaterialApp(
@@ -34,10 +45,9 @@ class _MyAppState extends State<MyApp> {
           backgroundColor: Colors.grey,
         ),
 
- backgroundColor: Colors.transparent,
+ backgroundColor: Colors.orangeAccent,
 
         body:myPages[pageNumber],
-
         bottomNavigationBar: BottomNavigationBar(
 
           currentIndex: pageNumber,
@@ -68,7 +78,8 @@ class _MyAppState extends State<MyApp> {
 }
 //        --   login page   --
 class LoginPage extends StatefulWidget{
-  const LoginPage({super.key});
+  final double fontSize;
+  const LoginPage({super.key, required this.fontSize});
   State<LoginPage> createState() => LoginPageState();
 }
 class LoginPageState extends State<LoginPage>{
@@ -80,7 +91,6 @@ class LoginPageState extends State<LoginPage>{
       backgroundColor: Colors.grey,
         body:
         Center(child:
-
           SizedBox(
               width: 200,height:300,
             child:
@@ -89,14 +99,12 @@ class LoginPageState extends State<LoginPage>{
             mainAxisAlignment: MainAxisAlignment.center,
             children:[
 
-
           TextFieldTapRegion(child: (TextField(
               decoration: InputDecoration(hintText: "Username",))),),
           TextFieldTapRegion(child: (TextField(
               decoration: InputDecoration(hintText: "Password"))),),
 
           ElevatedButton(
-
               onPressed: (){
                 ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content:Text("Login Successful")),
@@ -104,13 +112,9 @@ class LoginPageState extends State<LoginPage>{
         },
 
               child:Text("Login"),
-
-          )
-        ]
+          )]
             ),
           ),
-
-
         ),
     );
   }
@@ -118,11 +122,13 @@ class LoginPageState extends State<LoginPage>{
 
 // --- PAGE 2: HOME ---
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+
+  final double fontSize; //for font size settings.
+  const HomePage({super.key, required this.fontSize});
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Text('Hello World (Home Page)', style: TextStyle(fontSize: 24)),
     );
   }
@@ -130,7 +136,13 @@ class HomePage extends StatelessWidget {
 
 // --- PAGE 3: SETTINGS ---
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+  const SettingsPage({
+    super.key,
+  required this.fontSize,
+  required this.onChanged,});
+
+  final double fontSize;
+  final ValueChanged<double> onChanged;
 
   State<SettingsPage> createState() => SettingsPageState();
 }
@@ -138,7 +150,22 @@ class SettingsPageState extends State<SettingsPage> {
 
   Widget build(BuildContext context) {
     return const Center(
-      child: Text('Settings Menu', style: TextStyle(fontSize: 24)),
+      child:Column(children:
+
+      [
+        Text('Settings Menu', style: TextStyle(fontSize: 24)),
+
+        DropdownMenu<double>
+          (
+            label:const Text("Font Size"),
+            dropdownMenuEntries:const [
+              DropdownMenuEntry(value: 16.0, label: "Small"),
+              DropdownMenuEntry(value: 24.0, label: "Medium"),
+              DropdownMenuEntry(value: 32.0, label: "Large"),
+            ]
+              ),
+        ]
+      )
     );
   }
 }

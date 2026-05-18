@@ -3,8 +3,10 @@ import 'constants/app_colors.dart';
 import 'pages/home_page.dart';
 import 'pages/login_page.dart';
 import 'pages/settings_page.dart';
+import 'services/medicine_notifications.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
@@ -18,6 +20,28 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   double currentFontSize = 16.0;
   int selectedPageIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _initNotifications();
+  }
+
+  Future<void> _initNotifications() async {
+    await MedicineNotifications.instance.initialize(
+      onNotificationTap: _handleNotificationTap,
+    );
+  }
+
+  void _handleNotificationTap() {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      selectedPageIndex = 0;
+    });
+  }
 
   // Update the font size for all pages.
   void updateFontSize(double newSize) {

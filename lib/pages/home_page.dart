@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../data/medicine_database.dart';
+import '../services/medicine_notifications.dart';
 import 'medicine_form_page.dart';
 import 'widgets/current_medicines_card.dart';
 import 'widgets/medicine_manage_sheet.dart';
@@ -38,6 +39,8 @@ class _HomePageState extends State<HomePage> {
         ..clear()
         ..addAll(loadedMedicines);
     });
+
+    await MedicineNotifications.instance.syncDailySchedules(_medicines);
   }
 
   void _refreshSummary() {
@@ -47,6 +50,9 @@ class _HomePageState extends State<HomePage> {
   Future<void> _toggleTaken(int index, bool isTaken) async {
     int? id = _medicines[index]['id'] as int?;
     if (id != null) {
+      setState(() {
+        _medicines[index]['isTaken'] = isTaken;
+      });
       await _database.setMedicineTaken(id, isTaken);
       await _loadMedicines();
     }
@@ -85,6 +91,23 @@ class _HomePageState extends State<HomePage> {
     );
 
     if (savedMedicine != null) {
+      await _loadMedicines();
+    }
+  }
+
+  Future<void> _openEditMedicinePage(int index) async {
+    Map<String, dynamic> existingMedicine = _medicines[index];
+    Map<String, dynamic>? updatedMedicine = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => MedicineFormPage(
+          fontSize: widget.fontSize,
+          database: _database,
+          existingMedicine: existingMedicine,
+        ),
+      ),
+    );
+
+    if (updatedMedicine != null) {
       await _loadMedicines();
     }
   }
@@ -182,6 +205,7 @@ class _HomePageState extends State<HomePage> {
                     fontSize: widget.fontSize,
                     medicines: _medicines,
                     onToggleTaken: _toggleTaken,
+                    onEdit: _openEditMedicinePage,
                     onDelete: _deleteMedicine,
                   ),
                   const SizedBox(height: 20),

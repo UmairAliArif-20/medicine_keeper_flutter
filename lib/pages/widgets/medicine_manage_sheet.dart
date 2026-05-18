@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import '../../constants/app_colors.dart';
 import '../../data/medicine_database.dart';
+import '../../services/medicine_notifications.dart';
 import '../medicine_form_page.dart';
 
 class MedicineManageSheet extends StatefulWidget {
@@ -37,6 +38,7 @@ class _MedicineManageSheetState extends State<MedicineManageSheet> {
     if (updated != null) {
       setState(() => widget.medicines[index] = updated);
       widget.onChanged();
+      await MedicineNotifications.instance.scheduleOrUpdateForMedicine(updated);
     }
   }
 
@@ -44,6 +46,7 @@ class _MedicineManageSheetState extends State<MedicineManageSheet> {
     int? id = widget.medicines[index]['id'] as int?;
     if (id != null) {
       await widget.database.deleteMedicine(id);
+      await MedicineNotifications.instance.cancelById(id);
       setState(() => widget.medicines.removeAt(index));
       widget.onChanged();
     }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../data/medicine_database.dart';
+import '../services/medicine_notifications.dart';
 import 'widgets/medicine_form_action_card.dart';
 import 'widgets/medicine_form_fields_card.dart';
 import 'widgets/medicine_form_header_card.dart';
@@ -102,6 +103,14 @@ class _MedicineFormPageState extends State<MedicineFormPage> {
       await widget.database.updateMedicine(medicine);
     } else {
       medicine['id'] = await widget.database.addMedicine(medicine);
+    }
+
+    try {
+      await MedicineNotifications.instance.scheduleOrUpdateForMedicine(
+        medicine,
+      );
+    } catch (error) {
+      debugPrint('Failed to update notification for medicine: $error');
     }
 
     if (!mounted) {

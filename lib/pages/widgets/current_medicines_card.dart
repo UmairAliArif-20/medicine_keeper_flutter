@@ -6,6 +6,7 @@ class CurrentMedicinesCard extends StatefulWidget {
   final double fontSize;
   final List<Map<String, dynamic>> medicines;
   final Function(int, bool) onToggleTaken;
+  final Function(int) onEdit;
   final Function(int) onDelete;
 
   const CurrentMedicinesCard({
@@ -13,6 +14,7 @@ class CurrentMedicinesCard extends StatefulWidget {
     required this.fontSize,
     required this.medicines,
     required this.onToggleTaken,
+    required this.onEdit,
     required this.onDelete,
   });
 
@@ -21,14 +23,18 @@ class CurrentMedicinesCard extends StatefulWidget {
 }
 
 class _CurrentMedicinesCardState extends State<CurrentMedicinesCard> {
-  int? _selectedIndex;
+  int? _selectedId;
 
   @override
   void didUpdateWidget(covariant CurrentMedicinesCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Reset selection if the medicines list changes externally
-    if (widget.medicines.length != oldWidget.medicines.length) {
-      _selectedIndex = null;
+    if (_selectedId == null) return;
+
+    bool stillExists = widget.medicines.any(
+      (med) => (med['id'] as int?) == _selectedId,
+    );
+    if (!stillExists) {
+      _selectedId = null;
     }
   }
 
@@ -37,15 +43,42 @@ class _CurrentMedicinesCardState extends State<CurrentMedicinesCard> {
     return time.format(context);
   }
 
-  void _confirmDelete(BuildContext context) {
-    if (_selectedIndex == null) return;
-    
+  int? _selectedIndex() {
+    if (_selectedId == null) return null;
+
+    int index = widget.medicines.indexWhere(
+      (med) => (med['id'] as int?) == _selectedId,
+    );
+    return index == -1 ? null : index;
+  }
+
+  void _toggleSelection(int index) {
+    int? id = widget.medicines[index]['id'] as int?;
+    setState(() {
+      if (id != null && _selectedId == id) {
+        _selectedId = null;
+      } else {
+        _selectedId = id;
+      }
+    });
+  }
+
+  void _openEdit(int index) {
+    widget.onEdit(index);
+    setState(() {
+      _selectedId = null;
+    });
+  }
+
+  void _confirmDelete(BuildContext context, int index) {
+    if (index < 0 || index >= widget.medicines.length) return;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Delete Medicine?"),
         content: Text(
-          "Are you sure you want to remove '${widget.medicines[_selectedIndex!]['name']}'?",
+          "Are you sure you want to remove '${widget.medicines[index]['name']}'?",
           style: TextStyle(fontSize: widget.fontSize - 2),
         ),
         actions: [
@@ -55,13 +88,16 @@ class _CurrentMedicinesCardState extends State<CurrentMedicinesCard> {
           ),
           TextButton(
             onPressed: () {
-              widget.onDelete(_selectedIndex!);
+              widget.onDelete(index);
               setState(() {
-                _selectedIndex = null;
+                _selectedId = null;
               });
               Navigator.pop(context);
             },
-            child: const Text("Delete", style: TextStyle(color: Colors.redAccent)),
+            child: const Text(
+              "Delete",
+              style: TextStyle(color: Colors.redAccent),
+            ),
           ),
         ],
       ),
@@ -90,6 +126,8 @@ class _CurrentMedicinesCardState extends State<CurrentMedicinesCard> {
         ),
       );
     }
+
+    final int? selectedIndex = _selectedIndex();
 
     return Container(
       decoration: BoxDecoration(
@@ -121,14 +159,17 @@ class _CurrentMedicinesCardState extends State<CurrentMedicinesCard> {
                   ),
                 ),
                 const Spacer(),
-                if (_selectedIndex != null)
+                if (selectedIndex != null)
                   IconButton(
                     tooltip: 'Delete selected',
-                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                    onPressed: () => _confirmDelete(context),
+                    icon: const Icon(
+                      Icons.delete_outline,
+                      color: Colors.redAccent,
+                    ),
+                    onPressed: () => _confirmDelete(context, selectedIndex),
                   )
                 else
-                  const SizedBox(height: 48), // Spacer height consistency
+                  const SizedBox(height: 48),
               ],
             ),
           ),
@@ -146,35 +187,48 @@ class _CurrentMedicinesCardState extends State<CurrentMedicinesCard> {
               final med = widget.medicines[index];
               final bool isTaken = med['isTaken'] ?? false;
               final String? imagePath = med['imagePath'];
-              final bool isSelected = _selectedIndex == index;
+              final bool isSelected = selectedIndex == index;
 
               return ListTile(
                 dense: true,
                 selected: isSelected,
                 selectedTileColor: AppColors.primary.withOpacity(0.05),
                 onTap: () {
-                  setState(() {
-                    _selectedIndex = isSelected ? null : index;
-                  });
+                  widget.onToggleTaken(index, !isTaken);
                 },
+                onLongPress: null,
                 leading: _buildImage(imagePath),
                 title: Text(
                   med['name'] ?? 'Unknown',
                   style: TextStyle(
                     fontSize: widget.fontSize,
                     decoration: isTaken ? TextDecoration.lineThrough : null,
-                    color: isTaken ? AppColors.textSecondary : AppColors.textPrimary,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    color: isTaken
+                        ? AppColors.textSecondary
+                        : AppColors.textPrimary,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                   ),
                 ),
                 subtitle: Text(
                   _formatTime(context, med['timeMinutes'] ?? 0),
                   style: TextStyle(fontSize: widget.fontSize - 2),
                 ),
-                trailing: Checkbox(
-                  activeColor: AppColors.primary,
-                  value: isTaken,
-                  onChanged: (val) => widget.onToggleTaken(index, val ?? false),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Checkbox(
+                      value: isSelected,
+                      onChanged: (_) => _toggleSelection(index),
+                    ),
+                    if (isSelected)
+                      IconButton(
+                        tooltip: 'Edit',
+                        icon: const Icon(Icons.edit, color: AppColors.primary),
+                        onPressed: () => _openEdit(index),
+                      ),
+                  ],
                 ),
               );
             },
@@ -185,8 +239,12 @@ class _CurrentMedicinesCardState extends State<CurrentMedicinesCard> {
   }
 
   Widget _buildImage(String? imagePath) {
-    Widget icon = const Icon(Icons.medication, color: AppColors.primary, size: 20);
-    
+    Widget icon = const Icon(
+      Icons.medication,
+      color: AppColors.primary,
+      size: 20,
+    );
+
     if (imagePath != null && imagePath.isNotEmpty) {
       final file = File(imagePath);
       if (file.existsSync()) {

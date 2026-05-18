@@ -106,20 +106,21 @@ class _CurrentMedicinesCardState extends State<CurrentMedicinesCard> {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
     if (widget.medicines.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.5),
+          color: scheme.surface.withValues(alpha: 0.6),
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.primary.withOpacity(0.1)),
+          border: Border.all(color: scheme.outlineVariant),
         ),
         child: Center(
           child: Text(
             'No medicines added yet.',
             style: TextStyle(
               fontSize: widget.fontSize,
-              color: AppColors.textSecondary,
+              color: scheme.onSurfaceVariant,
               fontStyle: FontStyle.italic,
             ),
           ),
@@ -131,7 +132,7 @@ class _CurrentMedicinesCardState extends State<CurrentMedicinesCard> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: scheme.surface,
         borderRadius: BorderRadius.circular(18),
         boxShadow: const [
           BoxShadow(
@@ -148,14 +149,14 @@ class _CurrentMedicinesCardState extends State<CurrentMedicinesCard> {
             padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
             child: Row(
               children: [
-                const Icon(Icons.list_alt, color: AppColors.primary, size: 20),
+                Icon(Icons.list_alt, color: scheme.primary, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   'Your Medicines',
                   style: TextStyle(
                     fontSize: widget.fontSize,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                    color: scheme.onSurface,
                   ),
                 ),
                 const Spacer(),
@@ -181,7 +182,7 @@ class _CurrentMedicinesCardState extends State<CurrentMedicinesCard> {
               height: 1,
               indent: 16,
               endIndent: 16,
-              color: AppColors.primary.withOpacity(0.1),
+              color: scheme.outlineVariant,
             ),
             itemBuilder: (context, index) {
               final med = widget.medicines[index];
@@ -192,7 +193,7 @@ class _CurrentMedicinesCardState extends State<CurrentMedicinesCard> {
               return ListTile(
                 dense: true,
                 selected: isSelected,
-                selectedTileColor: AppColors.primary.withOpacity(0.05),
+                selectedTileColor: scheme.primary.withValues(alpha: 0.08),
                 onTap: () {
                   widget.onToggleTaken(index, !isTaken);
                 },
@@ -203,9 +204,7 @@ class _CurrentMedicinesCardState extends State<CurrentMedicinesCard> {
                   style: TextStyle(
                     fontSize: widget.fontSize,
                     decoration: isTaken ? TextDecoration.lineThrough : null,
-                    color: isTaken
-                        ? AppColors.textSecondary
-                        : AppColors.textPrimary,
+                    color: isTaken ? scheme.onSurfaceVariant : scheme.onSurface,
                     fontWeight: isSelected
                         ? FontWeight.bold
                         : FontWeight.normal,
@@ -213,7 +212,10 @@ class _CurrentMedicinesCardState extends State<CurrentMedicinesCard> {
                 ),
                 subtitle: Text(
                   _formatTime(context, med['timeMinutes'] ?? 0),
-                  style: TextStyle(fontSize: widget.fontSize - 2),
+                  style: TextStyle(
+                    fontSize: widget.fontSize - 2,
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -225,7 +227,7 @@ class _CurrentMedicinesCardState extends State<CurrentMedicinesCard> {
                     if (isSelected)
                       IconButton(
                         tooltip: 'Edit',
-                        icon: const Icon(Icons.edit, color: AppColors.primary),
+                        icon: Icon(Icons.edit, color: scheme.primary),
                         onPressed: () => _openEdit(index),
                       ),
                   ],
@@ -239,11 +241,8 @@ class _CurrentMedicinesCardState extends State<CurrentMedicinesCard> {
   }
 
   Widget _buildImage(String? imagePath) {
-    Widget icon = const Icon(
-      Icons.medication,
-      color: AppColors.primary,
-      size: 20,
-    );
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+    Widget icon = Icon(Icons.medication, color: scheme.primary, size: 20);
 
     if (imagePath != null && imagePath.isNotEmpty) {
       final file = File(imagePath);
@@ -265,7 +264,7 @@ class _CurrentMedicinesCardState extends State<CurrentMedicinesCard> {
       width: 32,
       height: 32,
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.1),
+        color: scheme.primary.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
       ),
       child: icon,

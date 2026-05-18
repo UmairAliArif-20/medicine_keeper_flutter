@@ -13,11 +13,13 @@ class MedicineFormPage extends StatefulWidget {
     super.key,
     required this.fontSize,
     required this.database,
+    required this.ownerEmail,
     this.existingMedicine,
   });
 
   final double fontSize;
   final MedicineDatabase database;
+  final String? ownerEmail;
   final Map<String, dynamic>? existingMedicine;
 
   @override
@@ -96,6 +98,7 @@ class _MedicineFormPageState extends State<MedicineFormPage> {
           ? widget.existingMedicine!['isTaken'] as bool
           : false,
       'imagePath': imagePath,
+      'ownerEmail': widget.existingMedicine?['ownerEmail'] ?? widget.ownerEmail,
     };
 
     if (_isEditMode) {
@@ -106,9 +109,7 @@ class _MedicineFormPageState extends State<MedicineFormPage> {
     }
 
     try {
-      await MedicineNotifications.instance.scheduleOrUpdateForMedicine(
-        medicine,
-      );
+      await MedicineNotifications.instance.scheduleOrUpdateForMedicine(medicine);
     } catch (error) {
       debugPrint('Failed to update notification for medicine: $error');
     }

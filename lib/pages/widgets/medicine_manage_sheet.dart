@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
-import '../../constants/app_colors.dart';
 import '../../data/medicine_database.dart';
 import '../../services/medicine_notifications.dart';
 import '../medicine_form_page.dart';
@@ -32,6 +31,7 @@ class _MedicineManageSheetState extends State<MedicineManageSheet> {
           fontSize: widget.fontSize,
           database: widget.database,
           existingMedicine: existing,
+          ownerEmail: existing['ownerEmail'] as String?,
         ),
       ),
     );
@@ -72,6 +72,7 @@ class _MedicineManageSheetState extends State<MedicineManageSheet> {
   @override
   Widget build(BuildContext context) {
     double maxHeight = MediaQuery.of(context).size.height * 0.75;
+    final ColorScheme scheme = Theme.of(context).colorScheme;
 
     return Container(
       constraints: BoxConstraints(maxHeight: maxHeight),
@@ -81,9 +82,9 @@ class _MedicineManageSheetState extends State<MedicineManageSheet> {
         20,
         20 + MediaQuery.of(context).viewInsets.bottom,
       ),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
         top: false,
@@ -91,14 +92,14 @@ class _MedicineManageSheetState extends State<MedicineManageSheet> {
           children: [
             Row(
               children: [
-                const Icon(Icons.medication, color: AppColors.primary),
+                Icon(Icons.medication, color: scheme.primary),
                 const SizedBox(width: 8),
                 Text(
                   'Medicines',
                   style: TextStyle(
                     fontSize: widget.fontSize + 4,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                    color: scheme.onSurface,
                   ),
                 ),
               ],
@@ -106,10 +107,16 @@ class _MedicineManageSheetState extends State<MedicineManageSheet> {
             const SizedBox(height: 12),
             Expanded(
               child: widget.medicines.isEmpty
-                  ? const Center(child: Text('No medicines yet.'))
+                  ? Center(
+                      child: Text(
+                        'No medicines yet.',
+                        style: TextStyle(color: scheme.onSurfaceVariant),
+                      ),
+                    )
                   : ListView.separated(
                       itemCount: widget.medicines.length,
-                      separatorBuilder: (context, index) => const Divider(),
+                      separatorBuilder: (context, index) =>
+                          Divider(color: scheme.outlineVariant),
                       itemBuilder: _buildMedicineTile,
                     ),
             ),
@@ -134,7 +141,7 @@ class _MedicineManageSheetState extends State<MedicineManageSheet> {
         'Time: ${_formatTime(context, timeMinutes)}',
         style: TextStyle(
           fontSize: widget.fontSize - 2,
-          color: AppColors.textSecondary,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       ),
       trailing: Wrap(
@@ -163,15 +170,16 @@ class _MedicineManageSheetState extends State<MedicineManageSheet> {
   }
 
   Widget _medicineImage(String? imagePath) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
     if (imagePath == null || imagePath.isEmpty) {
       return Container(
         width: 48,
         height: 48,
         decoration: BoxDecoration(
-          color: AppColors.backgroundLight,
+          color: scheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Icon(Icons.medication, color: AppColors.primary),
+        child: Icon(Icons.medication, color: scheme.primary),
       );
     }
 

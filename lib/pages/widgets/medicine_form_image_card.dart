@@ -20,21 +20,22 @@ class MedicineFormImageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
     TextStyle titleStyle = TextStyle(
       fontSize: fontSize + 4,
       fontWeight: FontWeight.bold,
-      color: AppColors.primary,
+      color: scheme.onSurface,
     );
 
     TextStyle helperStyle = TextStyle(
       fontSize: fontSize - 1,
-      color: AppColors.textSecondary,
+      color: scheme.onSurfaceVariant,
     );
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: scheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: const [
           BoxShadow(
@@ -67,19 +68,15 @@ class MedicineFormImageCard extends StatelessWidget {
               height: 180,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: AppColors.backgroundLight,
+                color: scheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: AppColors.primary.withOpacity(0.12)),
+                border: Border.all(color: scheme.outlineVariant),
               ),
               child: imagePath == null || imagePath!.isEmpty
                   ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
-                          Icons.image,
-                          size: 44,
-                          color: AppColors.primary,
-                        ),
+                        Icon(Icons.image, size: 44, color: scheme.primary),
                         const SizedBox(height: 10),
                         Text('Swipe up to click picture', style: helperStyle),
                         const SizedBox(height: 4),

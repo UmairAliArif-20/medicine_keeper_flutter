@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
 import '../data/medicine_database.dart';
 import '../services/medicine_notifications.dart';
 import 'medicine_form_page.dart';
 import 'widgets/current_medicines_card.dart';
-import 'widgets/medicine_manage_sheet.dart';
 import 'widgets/welcome_card.dart';
 import 'widgets/stat_card.dart';
 import 'widgets/reminder_card.dart';
@@ -12,7 +10,8 @@ import 'widgets/reminder_card.dart';
 // --- PAGE 2: HOME ---
 class HomePage extends StatefulWidget {
   final double fontSize;
-  const HomePage({super.key, required this.fontSize});
+  final String? ownerEmail;
+  const HomePage({super.key, required this.fontSize, required this.ownerEmail});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -28,8 +27,18 @@ class _HomePageState extends State<HomePage> {
     _loadMedicines();
   }
 
+  @override
+  void didUpdateWidget(HomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.ownerEmail != widget.ownerEmail) {
+      _loadMedicines();
+    }
+  }
+
   Future<void> _loadMedicines() async {
-    List<Map<String, dynamic>> loadedMedicines = await _database.getMedicines();
+    List<Map<String, dynamic>> loadedMedicines = await _database.getMedicines(
+      ownerEmail: widget.ownerEmail,
+    );
     if (!mounted) {
       return;
     }
@@ -41,10 +50,6 @@ class _HomePageState extends State<HomePage> {
     });
 
     await MedicineNotifications.instance.syncDailySchedules(_medicines);
-  }
-
-  void _refreshSummary() {
-    setState(() {});
   }
 
   Future<void> _toggleTaken(int index, bool isTaken) async {
@@ -66,27 +71,14 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _openManageMedicinesSheet() async {
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => MedicineManageSheet(
-        fontSize: widget.fontSize,
-        database: _database,
-        medicines: _medicines,
-        onChanged: _refreshSummary,
-      ),
-    );
-
-    await _loadMedicines();
-  }
-
   Future<void> _openAddMedicinePage() async {
     Map<String, dynamic>? savedMedicine = await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) =>
-            MedicineFormPage(fontSize: widget.fontSize, database: _database),
+        builder: (_) => MedicineFormPage(
+          fontSize: widget.fontSize,
+          database: _database,
+          ownerEmail: widget.ownerEmail,
+        ),
       ),
     );
 
@@ -103,6 +95,7 @@ class _HomePageState extends State<HomePage> {
           fontSize: widget.fontSize,
           database: _database,
           existingMedicine: existingMedicine,
+          ownerEmail: widget.ownerEmail,
         ),
       ),
     );
@@ -155,11 +148,12 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
     Map<String, dynamic> summary = _getSummary(context);
     final TextStyle headingStyle = TextStyle(
       fontSize: widget.fontSize + 6,
       fontWeight: FontWeight.bold,
-      color: AppColors.primary,
+      color: scheme.primary,
     );
 
     return Padding(
@@ -181,14 +175,14 @@ class _HomePageState extends State<HomePage> {
                       StatCard(
                         label: 'Due',
                         value: summary['dueCount'].toString(),
-                        color: AppColors.primary,
+                        color: scheme.primary,
                         fontSize: widget.fontSize,
                       ),
                       const SizedBox(width: 12),
                       StatCard(
                         label: 'Taken',
                         value: summary['takenCount'].toString(),
-                        color: AppColors.accent,
+                        color: scheme.secondary,
                         fontSize: widget.fontSize,
                       ),
                     ],
@@ -220,8 +214,8 @@ class _HomePageState extends State<HomePage> {
               onPressed: _openAddMedicinePage,
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                backgroundColor: scheme.primary,
+                foregroundColor: scheme.onPrimary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),

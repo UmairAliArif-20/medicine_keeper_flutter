@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../constants/app_colors.dart';
 
 class ReminderCard extends StatelessWidget {
   final double fontSize;
@@ -13,19 +12,23 @@ class ReminderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: scheme.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.primary.withOpacity(0.15)),
+        border: Border.all(color: scheme.primary.withValues(alpha: 0.15)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.notifications_active, color: AppColors.primary),
+          Icon(Icons.notifications_active, color: scheme.primary),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(message, style: TextStyle(fontSize: fontSize - 1)),
+            child: Text(
+              message,
+              style: TextStyle(fontSize: fontSize - 1, color: scheme.onSurface),
+            ),
           ),
         ],
       ),

@@ -12,6 +12,7 @@ class MedicineDatabase {
   static const String _columnTimeMinutes = 'time_minutes';
   static const String _columnIsTaken = 'is_taken';
   static const String _columnImagePath = 'image_path';
+  static const String _columnOwnerEmail = 'owner_email';
   Database? _db;
 
   Future<Database> _getDatabase() async {
@@ -24,7 +25,7 @@ class MedicineDatabase {
 
     _db = await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDatabase,
       onUpgrade: _upgradeDatabase,
     );
@@ -40,6 +41,7 @@ class MedicineDatabase {
       '$_columnTimeMinutes INTEGER NOT NULL, '
       '$_columnIsTaken INTEGER NOT NULL'
       ', $_columnImagePath TEXT'
+      ', $_columnOwnerEmail TEXT'
       ')',
     );
   }
@@ -54,12 +56,28 @@ class MedicineDatabase {
         'ALTER TABLE $_tableMedicines ADD COLUMN $_columnImagePath TEXT',
       );
     }
+
+    if (oldVersion < 3) {
+      await db.execute(
+        'ALTER TABLE $_tableMedicines ADD COLUMN $_columnOwnerEmail TEXT',
+      );
+    }
   }
 
-  Future<List<Map<String, dynamic>>> getMedicines() async {
+  Future<List<Map<String, dynamic>>> getMedicines({String? ownerEmail}) async {
     Database db = await _getDatabase();
+    String? where;
+    List<Object?>? whereArgs;
+    if (ownerEmail == null || ownerEmail.isEmpty) {
+      where = '$_columnOwnerEmail IS NULL';
+    } else {
+      where = '$_columnOwnerEmail = ?';
+      whereArgs = <Object>[ownerEmail];
+    }
     List<Map<String, Object?>> rows = await db.query(
       _tableMedicines,
+      where: where,
+      whereArgs: whereArgs,
       orderBy: '$_columnTimeMinutes ASC',
     );
 
@@ -75,6 +93,17 @@ class MedicineDatabase {
     Database db = await _getDatabase();
     Map<String, Object?> row = _medicineToRow(medicine);
     return db.insert(_tableMedicines, row);
+  }
+
+  Future<void> attachGuestMedicinesToOwner(String ownerEmail) async {
+    if (ownerEmail.trim().isEmpty) {
+      return;
+    }
+
+    Database db = await _getDatabase();
+    await db.update(_tableMedicines, <String, Object?>{
+      _columnOwnerEmail: ownerEmail,
+    }, where: '$_columnOwnerEmail IS NULL');
   }
 
   Future<void> updateMedicine(Map<String, dynamic> medicine) async {
@@ -116,6 +145,7 @@ class MedicineDatabase {
       'timeMinutes': row[_columnTimeMinutes] as int,
       'isTaken': (row[_columnIsTaken] as int) == 1,
       'imagePath': row[_columnImagePath] as String?,
+      'ownerEmail': row[_columnOwnerEmail] as String?,
     };
   }
 
@@ -126,6 +156,7 @@ class MedicineDatabase {
       _columnTimeMinutes: medicine['timeMinutes'],
       _columnIsTaken: isTaken ? 1 : 0,
       _columnImagePath: medicine['imagePath'],
+      _columnOwnerEmail: medicine['ownerEmail'],
     };
   }
 }

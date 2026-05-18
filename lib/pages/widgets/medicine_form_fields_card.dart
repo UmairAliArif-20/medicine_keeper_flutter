@@ -18,6 +18,7 @@ class MedicineFormFieldsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
     String timeLabel = 'Choose time';
     if (selectedTime != null) {
       timeLabel = 'Time: ${selectedTime!.format(context)}';
@@ -26,7 +27,7 @@ class MedicineFormFieldsCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: scheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: const [
           BoxShadow(
@@ -44,7 +45,7 @@ class MedicineFormFieldsCard extends StatelessWidget {
             style: TextStyle(
               fontSize: fontSize + 4,
               fontWeight: FontWeight.bold,
-              color: AppColors.primary,
+              color: scheme.onSurface,
             ),
           ),
           const SizedBox(height: 12),
@@ -54,7 +55,7 @@ class MedicineFormFieldsCard extends StatelessWidget {
             decoration: InputDecoration(
               labelText: 'Medicine name',
               filled: true,
-              fillColor: AppColors.backgroundLight,
+              fillColor: scheme.surfaceContainerHighest,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
                 borderSide: BorderSide.none,

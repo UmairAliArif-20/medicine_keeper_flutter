@@ -16,10 +16,11 @@ class MedicineFormHeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: scheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: const [
           BoxShadow(
@@ -35,14 +36,10 @@ class MedicineFormHeaderCard extends StatelessWidget {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: AppColors.accent.withOpacity(0.25),
+              color: scheme.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(
-              Icons.medication,
-              color: AppColors.primary,
-              size: 30,
-            ),
+            child: Icon(Icons.medication, color: scheme.primary, size: 30),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -54,7 +51,7 @@ class MedicineFormHeaderCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: fontSize + 6,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                    color: scheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -62,7 +59,7 @@ class MedicineFormHeaderCard extends StatelessWidget {
                   subtitle,
                   style: TextStyle(
                     fontSize: fontSize - 1,
-                    color: AppColors.textPrimary,
+                    color: scheme.onSurfaceVariant,
                   ),
                 ),
               ],

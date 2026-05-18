@@ -19,7 +19,6 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   double currentFontSize = 16.0;
-  int selectedPageIndex = 0;
 
   @override
   void initState() {
@@ -43,7 +42,10 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  // Update the font size for all pages.
+  int selectedPageIndex = 0; // Starts back at Home (index 0) once logged in
+  bool isLoggedIn =
+      false; // Track login state to hide/show the navigation shell
+
   void updateFontSize(double newSize) {
     setState(() {
       currentFontSize = newSize;
@@ -54,7 +56,6 @@ class _MyAppState extends State<MyApp> {
     return <Widget>[
       HomePage(fontSize: currentFontSize),
       SettingsPage(fontSize: currentFontSize, onChanged: updateFontSize),
-      LoginPage(fontSize: currentFontSize),
     ];
   }
 
@@ -62,12 +63,31 @@ class _MyAppState extends State<MyApp> {
     return const [
       BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
       BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
-      BottomNavigationBarItem(icon: Icon(Icons.login), label: 'Login'),
     ];
   }
 
   @override
   Widget build(BuildContext context) {
+    // 1. If the user is NOT logged in, show ONLY the login page with no extra navigation UI bars
+    if (!isLoggedIn) {
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          useMaterial3: true,
+          colorSchemeSeed: AppColors.primary,
+        ),
+        home: LoginPage(
+          fontSize: currentFontSize,
+          onLoginSuccess: () {
+            setState(() {
+              isLoggedIn = true; // Flips state and unlocks full layout safely
+            });
+          },
+        ),
+      );
+    }
+
+    // 2. If logged in, load your exact untouched layout design with structural widgets
     List<Widget> pages = _pages();
 
     return MaterialApp(
